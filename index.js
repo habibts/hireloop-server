@@ -70,6 +70,25 @@ app.delete("/jobs/:id", async (req, res) => {
   }
 });
 
+app.patch("/jobs/:id", async (req, res) => {
+  try {
+    const { status } = req.body;
+    if (!["open", "closed"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+    const result = await jobs.updateOne(
+      { _id: new ObjectId(req.params.id) },
+      { $set: { status } }
+    );
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: "Job not found" });
+    }
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update the job" });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
